@@ -78,7 +78,7 @@ startup
 });
 #endregion
 
-    settings.Add("IL Mode", true, "IL Mode: Enables reset + autostart for ILs");
+    settings.Add("IL Mode", true, "IL Mode: Enables autostart, autosplit + reset for ILs");
 
     //Settings group for enabling text display options
     settings.Add("textDisplay", true, "Text Options");
@@ -88,21 +88,21 @@ startup
     //Settings group for game related info
     settings.Add("gameInfo", true, "Various Game Info");
     //Sub-settings: this controls whether to show "some value" as a text component
-    settings.Add("placeholder", true, "placeholder", "gameInfo");
+    settings.Add("placeholder", false, "placeholder", "gameInfo");
     settings.Add("payoutAmount", true, "Amount Paid To Player on Payout Screen", "gameInfo");
     settings.Add("Retry Pressed?", false, "Retry Pressed", "gameInfo");
     settings.Add("totalGameDamage", false, "Total Game Damage", "gameInfo");
     settings.Add("MainObj", true, "Main Obj Count", "gameInfo");
     settings.Add("SideObj", true, "Side Obj Count", "gameInfo");
-    settings.Add("footStepTimer", true, "footStepTimer", "gameInfo");
+    settings.Add("footStepTimer", false, "footStepTimer", "gameInfo");
 
     //Settings group for Unity related info
-    settings.Add("UnityInfo", false, "Unity Scene Info");
+    settings.Add("UnityInfo", true, "Unity Scene Info");
     //Sub-settings: this controls whether to show "some value" as a text component
     //One downside to this new method is the setting key ie "Scene Loading?" must be the same as text1 (the left text) - a bit weird but not the end of the world.
     settings.Add("Scene Loading?", false, "Check if a Unity scene is loading", "UnityInfo");
     settings.Add("LScene Name: ", false, "Name of Loading Scene", "UnityInfo");
-    settings.Add("AScene Name: ", false, "Name of Active Scene", "UnityInfo");
+    settings.Add("AScene Name: ", true, "Name of Active Scene", "UnityInfo");
 
     //Settings group for debug
     settings.Add("DebugInfo", false, "Debug Info");
