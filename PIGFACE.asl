@@ -229,7 +229,13 @@ onStart
 
 split
 {
-    if(old.payoutAmount == 0 && current.payoutAmount > 0) 
+    if
+    (
+        old.payoutAmount == 0 && current.payoutAmount > 0                          ||
+        old.activeScene == "kit_screen" && current.activeScene == "farmhouse"      ||
+        settings["IL Mode"] && current.mainObjectiveCount < old.mainObjectiveCount ||
+        settings["IL Mode"] && current.sideObjectiveCount < old.sideObjectiveCount
+    ) 
     return true;
 }
 
