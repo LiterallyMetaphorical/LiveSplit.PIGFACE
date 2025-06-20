@@ -181,9 +181,12 @@ update
 
     //Get the current active scene's name and set it to `current.activeScene` - sometimes, it is null, so fallback to old value
     current.activeScene = vars.Helper.Scenes.Active.Name ?? current.activeScene;
-
     //Usually the scene that's loading, a bit jank in this version of asl-help
     current.loadingScene = vars.Helper.Scenes.Loaded[0].Name ?? current.loadingScene;
+    if(!String.IsNullOrWhiteSpace(vars.Helper.Scenes.Active.Name))    current.activeScene = vars.Helper.Scenes.Active.Name;
+    if(!String.IsNullOrWhiteSpace(vars.Helper.Scenes.Loaded[0].Name))    current.loadingScene = vars.Helper.Scenes.Loaded[0].Name;
+    if(current.activeScene != old.activeScene) vars.Log("active: Old: \"" + old.activeScene + "\", Current: \"" + current.activeScene + "\"");
+    if(current.loadingScene != old.loadingScene) vars.Log("loading: Old: \"" + old.loadingScene + "\", Current: \"" + current.loadingScene + "\"");
 
     //Log changes to the active scene
     if(old.activeScene != current.activeScene) {vars.Log("activeScene: " + old.activeScene + " -> " + current.activeScene);}
@@ -241,7 +244,8 @@ split
 
 isLoading
 {
-    return vars.SceneLoading == "Loading" || current.payoutAmount > 0;
+  if((current.loadingScene != current.activeScene) || current.payoutAmount > 0) return true;
+  else return false;
 }
 
 reset
