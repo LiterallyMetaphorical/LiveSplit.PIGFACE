@@ -68,18 +68,20 @@
     #region setting creation
     dynamic[,] _settings =
     {
+        { "SplitOptions",    true,  "Objective Splits: Enables autosplits on objective completions", null },
+        { "ObjectiveSplits",    false,  "Objective Splits: Enables autosplits on objective completions", "SplitOptions" },
+        { "ApartmentSplits",    true,  "Apartment Splits: Enables a split between contracts", "SplitOptions" },
+
         { "IL Autoreset",       true,  "IL Autoreset", null },
-        { "ObjectiveSplits",    true,  "Objective Splits: Enables autosplits on objective completions", null },
 
         { "gameInfo",           true,  "Game Info",                    null },
             { "MainObj",        true,  "Main Obj Count",                       "gameInfo" },
             { "SideObj",        true,  "Side Obj Count",                       "gameInfo" },
-            { "payoutAmount",   true,  "Amount Paid To Player on Payout Screen","gameInfo" },
-            { "totalGameDamage",false, "Total Game Damage",                    "gameInfo" },
-            { "totalMoney",     false, "totalMoney",                           "gameInfo" },
+            { "totalMoney",     true, "totalMoney",                           "gameInfo" },
+            { "totalGameDamage",true, "Total Game Damage",                    "gameInfo" },
+            { "payoutAmount",   false,  "Amount Paid To Player on Payout Screen","gameInfo" },
             { "Retry Pressed?", false, "Retry Pressed",                        "gameInfo" },
-        { "UnityInfo",          true,  "Unity Scene Info",                     null },
-            { "Scene Loading?", false, "Check if a Unity scene is loading",    "UnityInfo" },
+        { "UnityInfo",          false,  "Unity Scene Info",                     null },
             { "LScene Name: ",  false, "Name of Loading Scene",                "UnityInfo" },
             { "AScene Name: ",  true,  "Name of Active Scene",                 "UnityInfo" },
         { "DebugInfo",          false, "Debug Info",                           null },
@@ -184,7 +186,6 @@
         //More text component stuff - checking for setting and then generating the text. No need for .ToString since we do that previously
         vars.SetTextIfEnabled("placeholder",current.placeholder);
         vars.SetTextIfEnabled("payoutAmount",current.payoutAmount);
-        vars.SetTextIfEnabled("Scene Loading?",vars.SceneLoading);
         vars.SetTextIfEnabled("LScene Name: ",current.loadingScene);
         vars.SetTextIfEnabled("AScene Name: ",current.activeScene);
         vars.SetTextIfEnabled("Retry Pressed?",current.RetryPressed);
@@ -203,9 +204,7 @@
         (old.mainObjectiveCount == 0 && current.mainObjectiveCount != 0 && current.mainObjectiveCount != -1) ||
         (old.mainObjectiveCount == -1 && current.mainObjectiveCount != 0 && current.mainObjectiveCount != -1)
         )
-        {
-            return true;
-        }
+        {return true;}
     }
 
     onStart
@@ -218,16 +217,6 @@
     {
         if(vars.SplitCooldownTimer.Elapsed.TotalSeconds < 3) {return false;}
 
-        //Objective Splits
-        if(settings["ObjectiveSplits"])
-        {
-            if (current.mainObjectiveCount < old.mainObjectiveCount && current.mainObjectiveCount != -1 ||
-                current.sideObjectiveCount < old.sideObjectiveCount && current.sideObjectiveCount != -1)
-            {
-                vars.SplitCooldownTimer.Restart();
-                return true;
-            }
-        }
         //Level Splits
         foreach (var check in vars.LevelChecks)
         {
@@ -235,6 +224,25 @@
             {
                 vars.LastTriggeredSplit = check.Item1 + " Completed";
                 vars.TriggeredLevels.Add(check.Item1); // mark as fired
+                vars.SplitCooldownTimer.Restart();
+                return true;
+            }
+        }
+        //Objective Splits
+        if(settings["ApartmentSplits"])
+        {
+            if (old.activeScene == "kit_screen" && current.activeScene != "kit_screen")
+            {
+                vars.SplitCooldownTimer.Restart();
+                return true;
+            }
+        }
+        //Objective Splits
+        if(settings["ObjectiveSplits"])
+        {
+            if (current.mainObjectiveCount < old.mainObjectiveCount && current.mainObjectiveCount != -1 ||
+                current.sideObjectiveCount < old.sideObjectiveCount && current.sideObjectiveCount != -1)
+            {
                 vars.SplitCooldownTimer.Restart();
                 return true;
             }
