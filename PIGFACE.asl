@@ -68,7 +68,7 @@
     #region setting creation
     dynamic[,] _settings =
     {
-        { "SplitOptions",    true,  "Objective Splits: Enables autosplits on objective completions", null },
+        { "SplitOptions",    true,  "Autosplit Options", null },
         { "ObjectiveSplits",    false,  "Objective Splits: Enables autosplits on objective completions", "SplitOptions" },
         { "ApartmentSplits",    true,  "Apartment Splits: Enables a split between contracts", "SplitOptions" },
 
