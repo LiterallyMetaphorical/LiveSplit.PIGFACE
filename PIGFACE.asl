@@ -78,6 +78,7 @@
         { "gameInfo",           false,  "Game Info",                    null },
             { "MainObj",        true,  "Main Obj Count",                       "gameInfo" },
             { "SideObj",        true,  "Side Obj Count",                       "gameInfo" },
+            { "Health",         true, "Health",                                 "gameInfo" },
             { "totalMoney",     true, "totalMoney",                           "gameInfo" },
             { "totalGameDamage",false, "Total Game Damage",                    "gameInfo" },
             { "payoutAmount",   false,  "Amount Paid To Player on Payout Screen","gameInfo" },
@@ -120,7 +121,8 @@
         // This is where we will load custom properties from the code
         vars.Helper.TryLoad = (Func<dynamic, bool>)(mono =>
         {
-        vars.Helper["placeholder"] = mono.Make<int>("Cellphone", "Instance", "_ringtone", 0x008);
+        vars.Helper["placeholder"] = mono.Make<float>("PlayerHealth", "Instance", "_currentHealth");
+        vars.Helper["Health"] = mono.Make<float>("PlayerHealth", "Instance", "_currentHealth");
         vars.Helper["mainObjectiveCount"] = mono.Make<int>("ObjectiveManager", "Instance", "_mainObjectiveCount");
         vars.Helper["sideObjectiveCount"] = mono.Make<int>("ObjectiveManager", "Instance", "_optionalObjectiveCount");
         vars.Helper["payoutAmount"] = mono.Make<int>("PayoutManager", "Instance", "_payoutAmount");
@@ -192,6 +194,7 @@
         vars.SetTextIfEnabled("Retry Pressed?",current.RetryPressed);
         vars.SetTextIfEnabled("totalGameDamage",current.totalGameDamage);
         vars.SetTextIfEnabled("totalMoney",current.totalMoney);
+        vars.SetTextIfEnabled("Health",current.Health);
         vars.SetTextIfEnabled("MainObj",current.mainObjectiveCount);
         vars.SetTextIfEnabled("SideObj",current.sideObjectiveCount);
         vars.SetTextIfEnabled("LastSplit", vars.LastTriggeredSplit);
