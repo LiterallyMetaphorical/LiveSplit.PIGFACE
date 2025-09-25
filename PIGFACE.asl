@@ -74,11 +74,11 @@
 
         { "IL Autoreset",       false,  "IL Autoreset - NOTE: will reset timer whenever pressing Retry, null },
 
-        { "gameInfo",           true,  "Game Info",                    null },
+        { "gameInfo",           false,  "Game Info",                    null },
             { "MainObj",        true,  "Main Obj Count",                       "gameInfo" },
             { "SideObj",        true,  "Side Obj Count",                       "gameInfo" },
             { "totalMoney",     true, "totalMoney",                           "gameInfo" },
-            { "totalGameDamage",true, "Total Game Damage",                    "gameInfo" },
+            { "totalGameDamage",false, "Total Game Damage",                    "gameInfo" },
             { "payoutAmount",   false,  "Amount Paid To Player on Payout Screen","gameInfo" },
             { "Retry Pressed?", false, "Retry Pressed",                        "gameInfo" },
         { "UnityInfo",          false,  "Unity Scene Info",                     null },
@@ -264,5 +264,6 @@
     {
         vars.TriggeredLevels.Clear();
     }
+
 
 
