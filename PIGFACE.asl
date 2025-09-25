@@ -255,7 +255,7 @@
 
     isLoading
     {
-        return current.loadingScene != current.activeScene || current.totalMoney == 0;
+        return current.loadingScene != current.activeScene || (old.warComp == true && current.warComp == false) || (current.payoutAmount > 0 && current.activeScene != "outro_cutscene");
     }
 
     reset
