@@ -258,7 +258,7 @@
 
     isLoading
     {
-        return current.loadingScene != current.activeScene || (old.warComp == true && current.warComp == false) || (current.payoutAmount > 0 && current.activeScene != "outro_cutscene");
+        return current.loadingScene != current.activeScene || (current.Health <= 0 && current.activeScene != "player_apt") || (current.payoutAmount > 0 && current.activeScene != "outro_cutscene");
     }
 
     reset
