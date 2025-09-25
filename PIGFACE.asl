@@ -72,7 +72,7 @@
         { "ObjectiveSplits",    false,  "Objective Splits: Enables autosplits on objective completions", "SplitOptions" },
         { "ApartmentSplits",    true,  "Apartment Splits: Enables a split between contracts", "SplitOptions" },
 
-        { "IL Autoreset",       true,  "IL Autoreset", null },
+        { "IL Autoreset",       false,  "IL Autoreset - NOTE: will reset timer whenever pressing "Retry", null },
 
         { "gameInfo",           true,  "Game Info",                    null },
             { "MainObj",        true,  "Main Obj Count",                       "gameInfo" },
@@ -264,3 +264,4 @@
     {
         vars.TriggeredLevels.Clear();
     }
+
