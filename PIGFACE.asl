@@ -72,6 +72,7 @@
         { "ObjectiveSplits",    false,  "Objective Splits: Enables autosplits on objective completions", "SplitOptions" },
         { "ApartmentSplits",    true,  "Apartment Splits: Enables a split between contracts", "SplitOptions" },
 
+        { "NG+ Autostart",      false,  "NG+ Autostart - Starts when loading into the apartment", null },
         { "IL Autoreset",       false,  "IL Autoreset - NOTE: will reset timer whenever pressing Retry", null },
 
         { "gameInfo",           false,  "Game Info",                    null },
@@ -201,10 +202,13 @@
         //Starts when a level is loaded essentially. Count is 0 when "loading" a level, and count is -1 when in apartment or intro cutscene
         if
         ( 
+        (settings["NG+ Autostart"] && old.activeScene != "player_apt" && current.activeScene == "player_apt") ||
         (old.mainObjectiveCount == 0 && current.mainObjectiveCount != 0 && current.mainObjectiveCount != -1) ||
         (old.mainObjectiveCount == -1 && current.mainObjectiveCount != 0 && current.mainObjectiveCount != -1)
         )
         {return true;}
+
+        
     }
 
     onStart
