@@ -206,8 +206,7 @@
         if
         ( 
         (settings["NG+ Autostart"] && old.activeScene != "player_apt" && current.activeScene == "player_apt") ||
-        (old.mainObjectiveCount == 0 && current.mainObjectiveCount != 0 && current.mainObjectiveCount != -1) ||
-        (old.mainObjectiveCount == -1 && current.mainObjectiveCount != 0 && current.mainObjectiveCount != -1)
+		(old.Health == 0 && current.Health == 100 && current.activeScene != "intro_cutscene")
         )
         {return true;}
 
@@ -275,5 +274,6 @@
     {
         vars.TriggeredLevels.Clear();
     }
+
 
 
