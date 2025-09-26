@@ -73,7 +73,7 @@
         { "ApartmentSplits",    true,  "Apartment Splits: Enables a split between contracts", "SplitOptions" },
 
         { "NG+ Autostart",      false,  "NG+ Autostart - Starts when loading into the apartment", null },
-        { "IL Autoreset",       false,  "IL Autoreset - NOTE: will reset timer whenever pressing Retry", null },
+        { "IL Autoreset",       false,  "IL Autoreset - NOTE: will reset timer whenever pressing Retry and upon death", null },
 
         { "gameInfo",           false,  "Game Info",                    null },
             { "MainObj",        true,  "Main Obj Count",                       "gameInfo" },
@@ -121,7 +121,7 @@
         // This is where we will load custom properties from the code
         vars.Helper.TryLoad = (Func<dynamic, bool>)(mono =>
         {
-        vars.Helper["placeholder"] = mono.Make<float>("PlayerHealth", "Instance", "_currentHealth");
+        vars.Helper["placeholder"] = mono.Make<float>("PlayerController", "Instance", 0x0b4);
         vars.Helper["Health"] = mono.Make<float>("PlayerHealth", "Instance", "_currentHealth");
         vars.Helper["mainObjectiveCount"] = mono.Make<int>("ObjectiveManager", "Instance", "_mainObjectiveCount");
         vars.Helper["sideObjectiveCount"] = mono.Make<int>("ObjectiveManager", "Instance", "_optionalObjectiveCount");
@@ -263,7 +263,11 @@
 
     reset
     {
-        if(settings["IL Autoreset"] && old.RetryPressed == false && current.RetryPressed == true)
+        if
+        (
+            (settings["IL Autoreset"] && old.RetryPressed == false && current.RetryPressed == true) ||
+            (settings["IL Autoreset"] && old.Health > 0 && current.Health <= 0)
+        )
         {return true;}
     }
 
