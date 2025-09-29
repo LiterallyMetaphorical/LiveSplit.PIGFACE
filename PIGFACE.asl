@@ -69,7 +69,7 @@
     dynamic[,] _settings =
     {
         { "SplitOptions",       true,  "Autosplit Options", null },
-        { "LevelSplits",        true,  "Objective Splits: Autosplits when HP goes to 10000 at end of level", "SplitOptions" },
+        { "LevelSplits",        true,  "Level Splits: Autosplits when HP goes to 10000 at end of level", "SplitOptions" },
         { "ApartmentSplits",    true,  "Apartment Splits: Autosplits when leaving Van going into a level", "SplitOptions" },
         { "ObjectiveSplits",    false, "Objective Splits: Autosplits on objective completions", "SplitOptions" },
 
