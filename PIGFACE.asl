@@ -68,9 +68,10 @@
     #region setting creation
     dynamic[,] _settings =
     {
-        { "SplitOptions",    true,  "Autosplit Options", null },
-        { "ObjectiveSplits",    false,  "Objective Splits: Enables autosplits on objective completions", "SplitOptions" },
-        { "ApartmentSplits",    true,  "Apartment Splits: Enables a split between contracts", "SplitOptions" },
+        { "SplitOptions",       true,  "Autosplit Options", null },
+        { "LevelSplits",        true,  "Objective Splits: Autosplits when HP goes to 10000 at end of level", "SplitOptions" },
+        { "ApartmentSplits",    true,  "Apartment Splits: Autosplits when leaving Van going into a level", "SplitOptions" },
+        { "ObjectiveSplits",    false, "Objective Splits: Autosplits on objective completions", "SplitOptions" },
 
         { "IL Autoreset",       false,  "IL Autoreset - NOTE: will reset timer whenever pressing Retry and upon death", null },
 
@@ -193,7 +194,7 @@
         if(vars.SplitCooldownTimer.Elapsed.TotalSeconds < 3) {return false;}
 
         //Level Splits
-        if (old.Health != 10000 && current.Health == 10000 && current.activeScene != "player_apt" && current.activeScene != "intro_cutscene" && current.activeScene != "outro_cutscene" && current.activeScene != "early_access")
+        if (settings["LevelSplits"] && old.Health != 10000 && current.Health == 10000 && current.activeScene != "player_apt" && current.activeScene != "intro_cutscene" && current.activeScene != "outro_cutscene" && current.activeScene != "early_access")
         {
             vars.SplitCooldownTimer.Restart();
             return true;
