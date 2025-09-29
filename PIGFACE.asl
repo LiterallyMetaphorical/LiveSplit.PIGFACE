@@ -156,9 +156,11 @@
         current.loadingScene = vars.Helper.Scenes.Loaded[0].Name ?? current.loadingScene;
         if(!String.IsNullOrWhiteSpace(vars.Helper.Scenes.Active.Name))    current.activeScene = vars.Helper.Scenes.Active.Name;
         if(!String.IsNullOrWhiteSpace(vars.Helper.Scenes.Loaded[0].Name))    current.loadingScene = vars.Helper.Scenes.Loaded[0].Name;
-        //Log changes to the active scene
+
+        //Log changes to properties
         if(old.activeScene != current.activeScene) {vars.Log("activeScene: " + old.activeScene + " -> " + current.activeScene);}
         if(old.loadingScene != current.loadingScene) {vars.Log("loadingScene: " + old.loadingScene + " -> " + current.loadingScene);}
+        if(old.Health == 0 && current.Health != 0) {vars.Log("Health: " + old.Health + " -> " + current.Health);}
 
         //More text component stuff - checking for setting and then generating the text. No need for .ToString since we do that previously
         vars.SetTextIfEnabled("placeholder",current.placeholder);
@@ -175,13 +177,7 @@
 
     start
     {
-        //Starts when a level is loaded essentially. Count is 0 when "loading" a level, and count is -1 when in apartment or intro cutscene
-        if
-        ( 
-        (old.activeScene != "player_apt" && current.activeScene == "player_apt") ||
-		(old.Health == 0 && current.Health == 100 && current.activeScene != "intro_cutscene" && current.activeScene != "player_apt")
-        )
-        {return true;}
+        if (old.Health == 0 && current.Health == 100 && current.activeScene != "intro_cutscene") {return true;}
     }
 
     onStart
@@ -202,7 +198,11 @@
         //Objective Splits
         if(settings["ApartmentSplits"])
         {
-            if (old.activeScene == "kit_screen" && current.activeScene != "kit_screen")
+            if 
+            (
+                (old.activeScene == "kit_screen" && current.activeScene != "kit_screen") ||
+                (old.activeScene == "player_apt" && current.activeScene == "player_warehouse")
+            )
             {
                 vars.SplitCooldownTimer.Restart();
                 return true;
@@ -211,8 +211,10 @@
         //Objective Splits
         if(settings["ObjectiveSplits"])
         {
-            if (current.mainObjectiveCount < old.mainObjectiveCount && current.mainObjectiveCount != -1 ||
-                current.sideObjectiveCount < old.sideObjectiveCount && current.sideObjectiveCount != -1)
+            if (
+                (current.mainObjectiveCount < old.mainObjectiveCount && current.mainObjectiveCount != -1 && current.Health > 0) ||
+                (current.sideObjectiveCount < old.sideObjectiveCount && current.sideObjectiveCount != -1 && current.Health > 0)
+                )
             {
                 vars.SplitCooldownTimer.Restart();
                 return true;
