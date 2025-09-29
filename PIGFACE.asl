@@ -72,7 +72,6 @@
         { "ObjectiveSplits",    false,  "Objective Splits: Enables autosplits on objective completions", "SplitOptions" },
         { "ApartmentSplits",    true,  "Apartment Splits: Enables a split between contracts", "SplitOptions" },
 
-        { "NG+ Autostart",      false,  "NG+ Autostart - Starts when loading into the apartment", null },
         { "IL Autoreset",       false,  "IL Autoreset - NOTE: will reset timer whenever pressing Retry and upon death", null },
 
         { "gameInfo",           false,  "Game Info",                    null },
@@ -98,19 +97,7 @@
     {
         vars.SceneLoading = "";
         vars.SplitCooldownTimer.Start();
-        vars.TriggeredLevels = new HashSet<string>();
-        vars.LastTriggeredSplit = "N/A";
-
-        vars.LevelChecks = new List<Tuple<string, Func<dynamic, dynamic, bool>>> 
-        {
-            Tuple.Create("Warehouse", (Func<dynamic, dynamic, bool>)((o, c) => !o.warComp && c.warComp)),
-            Tuple.Create("Farmhouse", (Func<dynamic, dynamic, bool>)((o, c) => !o.farComp && c.farComp)),
-            Tuple.Create("Sunset Motel", (Func<dynamic, dynamic, bool>)((o, c) => !o.sunComp && c.sunComp)),
-            Tuple.Create("Train Station", (Func<dynamic, dynamic, bool>)((o, c) => !o.traComp && c.traComp)),
-            Tuple.Create("Suburbs", (Func<dynamic, dynamic, bool>)((o, c) => !o.subComp && c.subComp)),
-            Tuple.Create("Abandoned Mall", (Func<dynamic, dynamic, bool>)((o, c) => !o.mallComp && c.mallComp)),
-            Tuple.Create("Prison Night Club", (Func<dynamic, dynamic, bool>)((o, c) => !o.priComp && c.priComp))
-        };
+        vars.VisitedLevels = new HashSet<string>();
 
         //Enable if having scene print issues - a custom function defined in init, the `scene` is the scene's address (e.g. vars.Helper.Scenes.Active.Address)
         vars.ReadSceneName = (Func<IntPtr, string>)(scene => {
@@ -131,14 +118,6 @@
         vars.Helper["totalGameKills"] = mono.Make<int>("DataPersistenceManager", "Instance", "gameData", "_totalGameKills");
         vars.Helper["totalDeathCount"] = mono.Make<int>("DataPersistenceManager", "Instance", "gameData", "_totalDeathCount");
         vars.Helper["totalMoney"] = mono.Make<int>("DataPersistenceManager", "Instance", "gameData", "_totalMoney");
-
-        vars.Helper["warComp"] = mono.Make<bool>("DataPersistenceManager", "Instance", "gameData", "_warehouseCompleted");
-        vars.Helper["farComp"] = mono.Make<bool>("DataPersistenceManager", "Instance", "gameData", "_farmhouseCompleted");
-        vars.Helper["sunComp"] = mono.Make<bool>("DataPersistenceManager", "Instance", "gameData", "_sunsetMotelCompleted");
-        vars.Helper["traComp"] = mono.Make<bool>("DataPersistenceManager", "Instance", "gameData", "_trainStationCompleted");
-        vars.Helper["subComp"] = mono.Make<bool>("DataPersistenceManager", "Instance", "gameData", "_suburbsCompleted");
-        vars.Helper["mallComp"] = mono.Make<bool>("DataPersistenceManager", "Instance", "gameData", "_abandonedMallCompleted");
-        vars.Helper["priComp"] = mono.Make<bool>("DataPersistenceManager", "Instance", "gameData", "_prisonNightClubCompleted");
         return true;
         });
 
@@ -147,19 +126,13 @@
         current.Scene = "";
         current.activeScene = "";
         current.loadingScene = "";
+        current.Health = 0;
         current.RetryPressed = false;
         current.payoutAmount = 0;
         current.mainObjectiveCount = 9999;
         current.sideObjectiveCount = 9999;
         current.totalGameDamage = 0;
         current.totalMoney = 0;
-        current.warComp = false;
-        current.farComp = false;
-        current.sunComp = false;
-        current.traComp = false;
-        current.subComp = false;
-        current.mallComp = false;
-        current.priComp = false;
 
     //Helper function that sets or removes text depending on whether the setting is enabled - only works in `init` or later because `startup` cannot read setting values
         vars.SetTextIfEnabled = (Action<string, object>)((text1, text2) =>
@@ -197,7 +170,6 @@
         vars.SetTextIfEnabled("Health",current.Health);
         vars.SetTextIfEnabled("MainObj",current.mainObjectiveCount);
         vars.SetTextIfEnabled("SideObj",current.sideObjectiveCount);
-        vars.SetTextIfEnabled("LastSplit", vars.LastTriggeredSplit);
     }
 
     start
@@ -205,17 +177,14 @@
         //Starts when a level is loaded essentially. Count is 0 when "loading" a level, and count is -1 when in apartment or intro cutscene
         if
         ( 
-        (settings["NG+ Autostart"] && old.activeScene != "player_apt" && current.activeScene == "player_apt") ||
-		(old.Health == 0 && current.Health == 100 && current.activeScene != "intro_cutscene")
+        (old.activeScene != "player_apt" && current.activeScene == "player_apt") ||
+		(old.Health == 0 && current.Health == 100 && current.activeScene != "intro_cutscene" && current.activeScene != "player_apt")
         )
         {return true;}
-
-        
     }
 
     onStart
     {
-        vars.TriggeredLevels.Clear();
         vars.SplitCooldownTimer.Restart();
     }
 
@@ -224,15 +193,10 @@
         if(vars.SplitCooldownTimer.Elapsed.TotalSeconds < 3) {return false;}
 
         //Level Splits
-        foreach (var check in vars.LevelChecks)
+        if (old.Health != 10000 && current.Health == 10000 && current.activeScene != "player_apt" && current.activeScene != "intro_cutscene" && current.activeScene != "outro_cutscene" && current.activeScene != "early_access")
         {
-            if (check.Item2(old, current) && !vars.TriggeredLevels.Contains(check.Item1))
-            {
-                vars.LastTriggeredSplit = check.Item1 + " Completed";
-                vars.TriggeredLevels.Add(check.Item1); // mark as fired
-                vars.SplitCooldownTimer.Restart();
-                return true;
-            }
+            vars.SplitCooldownTimer.Restart();
+            return true;
         }
         //Objective Splits
         if(settings["ApartmentSplits"])
@@ -268,9 +232,4 @@
             (settings["IL Autoreset"] && old.Health > 0 && current.Health <= 0)
         )
         {return true;}
-    }
-
-    onReset
-    {
-        vars.TriggeredLevels.Clear();
     }
