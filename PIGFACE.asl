@@ -6,7 +6,6 @@
         Assembly.Load(File.ReadAllBytes("Components/asl-help")).CreateInstance("Unity");
 
         vars.Helper.LoadSceneManager = true;
-        vars.SplitCooldownTimer = new Stopwatch();
         vars.Helper.GameName = "PIGFACE";
         vars.Helper.AlertLoadless();
 
@@ -68,27 +67,23 @@
     #region setting creation
     dynamic[,] _settings =
     {
+        { "IL Autoreset",       false,  "IL Autoreset - NOTE: will reset timer whenever pressing Retry and upon death", null },
+        
         { "SplitOptions",       true,  "Autosplit Options", null },
         { "LevelSplits",        true,  "Level Splits: Autosplits when HP goes to 10000 at end of level", "SplitOptions" },
         { "ApartmentSplits",    true,  "Apartment Splits: Autosplits when leaving Van going into a level", "SplitOptions" },
         { "ObjectiveSplits",    false, "Objective Splits: Autosplits on objective completions", "SplitOptions" },
 
-        { "IL Autoreset",       false,  "IL Autoreset - NOTE: will reset timer whenever pressing Retry and upon death", null },
-
         { "gameInfo",           false,  "Game Info",                    null },
             { "MainObj",        true,  "Main Obj Count",                       "gameInfo" },
             { "SideObj",        true,  "Side Obj Count",                       "gameInfo" },
             { "Health",         true, "Health",                                 "gameInfo" },
-            { "totalMoney",     true, "totalMoney",                           "gameInfo" },
-            { "totalGameDamage",false, "Total Game Damage",                    "gameInfo" },
-            { "payoutAmount",   false,  "Amount Paid To Player on Payout Screen","gameInfo" },
             { "Retry Pressed?", false, "Retry Pressed",                        "gameInfo" },
         { "UnityInfo",          false,  "Unity Scene Info",                     null },
             { "LScene Name: ",  false, "Name of Loading Scene",                "UnityInfo" },
             { "AScene Name: ",  true,  "Name of Active Scene",                 "UnityInfo" },
         { "DebugInfo",          false, "Debug Info",                           null },
             { "placeholder",    false, "placeholder",                          "DebugInfo" },
-            { "LastSplit", true, "Last Split Triggered", "DebugInfo" },
     };
     vars.Helper.Settings.Create(_settings);
     #endregion
@@ -96,10 +91,6 @@
 
     init
     {
-        vars.SceneLoading = "";
-        vars.SplitCooldownTimer.Start();
-        vars.VisitedLevels = new HashSet<string>();
-
         //Enable if having scene print issues - a custom function defined in init, the `scene` is the scene's address (e.g. vars.Helper.Scenes.Active.Address)
         vars.ReadSceneName = (Func<IntPtr, string>)(scene => {
         string name = vars.Helper.ReadString(256, ReadStringType.UTF8, scene + 0x38);
@@ -109,31 +100,29 @@
         // This is where we will load custom properties from the code
         vars.Helper.TryLoad = (Func<dynamic, bool>)(mono =>
         {
-        vars.Helper["placeholder"] = mono.Make<float>("PlayerController", "Instance", 0x0b4);
+        vars.Helper["placeholder"] = mono.Make<float>("PlayerController", "Instance", "speed");
         vars.Helper["Health"] = mono.Make<float>("PlayerHealth", "Instance", "_currentHealth");
         vars.Helper["mainObjectiveCount"] = mono.Make<int>("ObjectiveManager", "Instance", "_mainObjectiveCount");
         vars.Helper["sideObjectiveCount"] = mono.Make<int>("ObjectiveManager", "Instance", "_optionalObjectiveCount");
-        vars.Helper["payoutAmount"] = mono.Make<int>("PayoutManager", "Instance", "_payoutAmount");
         vars.Helper["RetryPressed"] = mono.Make<bool>("PlayerInput", "Instance", "playerOptions", "retryButton", "hasSelection");
-        vars.Helper["totalGameDamage"] = mono.Make<int>("DataPersistenceManager", "Instance", "gameData", "_totalGameDamage");
-        vars.Helper["totalGameKills"] = mono.Make<int>("DataPersistenceManager", "Instance", "gameData", "_totalGameKills");
-        vars.Helper["totalDeathCount"] = mono.Make<int>("DataPersistenceManager", "Instance", "gameData", "_totalDeathCount");
-        vars.Helper["totalMoney"] = mono.Make<int>("DataPersistenceManager", "Instance", "gameData", "_totalMoney");
+
+        //vars.Helper["totalGameDamage"] = mono.Make<int>("DataPersistenceManager", "Instance", "gameData", "_totalGameDamage");
+        //vars.Helper["totalGameKills"] = mono.Make<int>("DataPersistenceManager", "Instance", "gameData", "_totalGameKills");
+        //vars.Helper["totalDeathCount"] = mono.Make<int>("DataPersistenceManager", "Instance", "gameData", "_totalDeathCount");
+        //vars.Helper["totalMoney"] = mono.Make<int>("DataPersistenceManager", "Instance", "gameData", "_totalMoney");
+        //vars.Helper["payoutAmount"] = mono.Make<int>("PayoutManager", "Instance", "_payoutAmount");
         return true;
         });
 
         //Clears errors when scene and other variables are null, will get updated once they get detected
-        current.placeholder = 0;
+        current.placeholder = false;
         current.Scene = "";
         current.activeScene = "";
         current.loadingScene = "";
         current.Health = 0;
         current.RetryPressed = false;
-        current.payoutAmount = 0;
         current.mainObjectiveCount = 9999;
         current.sideObjectiveCount = 9999;
-        current.totalGameDamage = 0;
-        current.totalMoney = 0;
 
     //Helper function that sets or removes text depending on whether the setting is enabled - only works in `init` or later because `startup` cannot read setting values
         vars.SetTextIfEnabled = (Action<string, object>)((text1, text2) =>
@@ -157,19 +146,19 @@
         if(!String.IsNullOrWhiteSpace(vars.Helper.Scenes.Active.Name))    current.activeScene = vars.Helper.Scenes.Active.Name;
         if(!String.IsNullOrWhiteSpace(vars.Helper.Scenes.Loaded[0].Name))    current.loadingScene = vars.Helper.Scenes.Loaded[0].Name;
 
-        //Log changes to properties
-        if(old.activeScene != current.activeScene) {vars.Log("activeScene: " + old.activeScene + " -> " + current.activeScene);}
-        if(old.loadingScene != current.loadingScene) {vars.Log("loadingScene: " + old.loadingScene + " -> " + current.loadingScene);}
-        if(old.Health == 0 && current.Health != 0) {vars.Log("Health: " + old.Health + " -> " + current.Health);}
+        if (settings["DebugInfo"])
+        {
+            //Log changes to properties
+            if(old.activeScene != current.activeScene) {vars.Log("activeScene: " + old.activeScene + " -> " + current.activeScene);}
+            if(old.loadingScene != current.loadingScene) {vars.Log("loadingScene: " + old.loadingScene + " -> " + current.loadingScene);}
+            if(old.Health == 0 && current.Health != 0) {vars.Log("Health: " + old.Health + " -> " + current.Health);}
+        }
 
         //More text component stuff - checking for setting and then generating the text. No need for .ToString since we do that previously
         vars.SetTextIfEnabled("placeholder",current.placeholder);
-        vars.SetTextIfEnabled("payoutAmount",current.payoutAmount);
         vars.SetTextIfEnabled("LScene Name: ",current.loadingScene);
         vars.SetTextIfEnabled("AScene Name: ",current.activeScene);
         vars.SetTextIfEnabled("Retry Pressed?",current.RetryPressed);
-        vars.SetTextIfEnabled("totalGameDamage",current.totalGameDamage);
-        vars.SetTextIfEnabled("totalMoney",current.totalMoney);
         vars.SetTextIfEnabled("Health",current.Health);
         vars.SetTextIfEnabled("MainObj",current.mainObjectiveCount);
         vars.SetTextIfEnabled("SideObj",current.sideObjectiveCount);
@@ -180,19 +169,11 @@
         if (old.Health == 0 && current.Health == 100 && current.activeScene != "intro_cutscene") {return true;}
     }
 
-    onStart
-    {
-        vars.SplitCooldownTimer.Restart();
-    }
-
     split
     {
-        if(vars.SplitCooldownTimer.Elapsed.TotalSeconds < 3) {return false;}
-
         //Level Splits
         if (settings["LevelSplits"] && old.Health != 10000 && current.Health == 10000 && current.activeScene != "player_apt" && current.activeScene != "intro_cutscene" && current.activeScene != "outro_cutscene" && current.activeScene != "early_access")
         {
-            vars.SplitCooldownTimer.Restart();
             return true;
         }
         //Objective Splits
@@ -204,7 +185,6 @@
                 (old.activeScene == "player_apt" && current.activeScene == "player_warehouse")
             )
             {
-                vars.SplitCooldownTimer.Restart();
                 return true;
             }
         }
@@ -216,7 +196,6 @@
                 (current.sideObjectiveCount < old.sideObjectiveCount && current.sideObjectiveCount != -1 && current.Health > 0)
                 )
             {
-                vars.SplitCooldownTimer.Restart();
                 return true;
             }
         }
